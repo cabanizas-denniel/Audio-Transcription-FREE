@@ -29,10 +29,26 @@ export function toDisplayTime(seconds) {
   return `${pad2(m)}:${pad2(sec)}.${ms}`;
 }
 
-/** One segment: timestamp line, then text on the next line. */
+function speakerPrefix(seg) {
+  return (seg?.speaker || "").trim();
+}
+
+/** One segment: speaker + timestamp header, then text on the next line. */
 export function formatTimestampBlock(seg) {
-  const line = `[${toDisplayTime(seg.start)} - ${toDisplayTime(seg.end)}]`;
-  return `${line}\n${seg.text.trim()}`;
+  const who = speakerPrefix(seg);
+  const time = `[${toDisplayTime(seg.start)} - ${toDisplayTime(seg.end)}]`;
+  const header = who ? `${who} ${time}` : time;
+  return `${header}\n${seg.text.trim()}`;
+}
+
+function formatSpeakerPlain(seg) {
+  const who = speakerPrefix(seg);
+  const text = seg.text.trim();
+  return who ? `${who}: ${text}` : text;
+}
+
+function hasSpeakers(segments) {
+  return segments.some((s) => s?.speaker);
 }
 
 export function formatTranscriptDisplay(result, includeTimestamps) {
@@ -40,6 +56,9 @@ export function formatTranscriptDisplay(result, includeTimestamps) {
   const segments = result.segments || [];
   if (includeTimestamps && segments.length) {
     return segments.map(formatTimestampBlock).join("\n\n");
+  }
+  if (hasSpeakers(segments)) {
+    return segments.map(formatSpeakerPlain).join("\n");
   }
   return result.text?.trim() || "(empty transcript)";
 }
@@ -49,6 +68,9 @@ export function formatTxt(result, includeTimestamps) {
   const segments = result.segments || [];
   if (includeTimestamps && segments.length) {
     return segments.map(formatTimestampBlock).join("\n\n");
+  }
+  if (hasSpeakers(segments)) {
+    return segments.map(formatSpeakerPlain).join("\n");
   }
   return result.text?.trim() || "";
 }
@@ -64,7 +86,8 @@ export function formatSrt(result) {
     .map((seg, i) => {
       const start = toSrtTime(seg.start);
       const end = toSrtTime(seg.end);
-      const text = seg.text.trim();
+      const who = speakerPrefix(seg);
+      const text = who ? `${who}: ${seg.text.trim()}` : seg.text.trim();
       return `${i + 1}\n${start} --> ${end}\n${text}`;
     })
     .join("\n\n")

@@ -34,7 +34,7 @@ export async function deleteJob(jobId) {
  */
 export function uploadTranscription(
   file,
-  { language, profile, includeTimestamps, onUploadProgress }
+  { language, profile, includeTimestamps, numSpeakers, onUploadProgress }
 ) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -46,6 +46,11 @@ export function uploadTranscription(
     if (includeTimestamps) {
       form.append("include_timestamps", "true");
     }
+    const speakers = Number(numSpeakers);
+    form.append(
+      "num_speakers",
+      String(Number.isFinite(speakers) && speakers >= 1 ? Math.min(10, Math.floor(speakers)) : 1)
+    );
 
     xhr.open("POST", API.transcriptions);
 

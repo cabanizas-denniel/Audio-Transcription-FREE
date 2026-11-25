@@ -2,9 +2,9 @@
  * Application bootstrap.
  */
 
-import { closeModal } from "./dom.js";
-import { Dashboard } from "./dashboard.js";
-import { UploadModal } from "./upload.js";
+import { closeModal } from "./dom.js?v=2";
+import { Dashboard } from "./dashboard.js?v=2";
+import { UploadModal } from "./upload.js?v=2";
 
 function initTranscriptModal() {
   const modal = document.querySelector("#transcript-modal");

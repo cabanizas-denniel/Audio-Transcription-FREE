@@ -60,6 +60,7 @@ class Transcriber:
         audio_path: Path,
         language: Optional[str] = None,
         beam_size: Optional[int] = None,
+        num_speakers: int = 1,
     ) -> TranscriptionResult:
         """Run synchronous transcription on the given audio file."""
         if self._model is None:
@@ -83,6 +84,16 @@ class Transcriber:
                 TranscriptSegment(start=seg.start, end=seg.end, text=seg.text.strip())
             )
             text_parts.append(seg.text)
+
+        if num_speakers and num_speakers >= 1:
+            from app.services.diarizer import assign_speakers
+
+            segments = assign_speakers(
+                audio_path,
+                segments,
+                num_speakers,
+                device=s.whisper_device,
+            )
 
         return TranscriptionResult(
             language=info.language,

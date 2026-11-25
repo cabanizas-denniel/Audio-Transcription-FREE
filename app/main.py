@@ -23,6 +23,15 @@ from app.workers.tasks import TranscriptionWorker
 logger = logging.getLogger(__name__)
 
 
+class NoCacheStaticFiles(StaticFiles):
+    """Serve static assets without long-lived browser caching (JS/CSS updates)."""
+
+    async def get_response(self, path: str, scope):  # type: ignore[override]
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-store, max-age=0"
+        return response
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
@@ -96,11 +105,14 @@ def create_app() -> FastAPI:
 
     static_dir = Path(__file__).resolve().parent.parent / "static"
     if static_dir.is_dir():
-        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+        app.mount("/static", NoCacheStaticFiles(directory=str(static_dir)), name="static")
 
         @app.get("/", include_in_schema=False)
         async def serve_dashboard() -> FileResponse:
-            return FileResponse(static_dir / "index.html")
+            return FileResponse(
+                static_dir / "index.html",
+                headers={"Cache-Control": "no-store, max-age=0"},
+            )
     else:
         @app.get("/", include_in_schema=False)
         async def root() -> dict[str, str]:

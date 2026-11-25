@@ -31,6 +31,7 @@ class Job:
     profile: TranscriptionProfile = TranscriptionProfile.PRECISE
     beam_size: int = 5
     include_timestamps: bool = False
+    num_speakers: int = 1
 
     def to_info(self) -> JobInfo:
         return JobInfo(
@@ -43,6 +44,7 @@ class Job:
             error=self.error,
             profile=self.profile,
             include_timestamps=self.include_timestamps,
+            num_speakers=self.num_speakers,
             result=self.result,
         )
 
@@ -74,6 +76,7 @@ def _job_from_disk(data: dict) -> Job | None:
         profile=info.profile,
         beam_size=beam_size,
         include_timestamps=info.include_timestamps,
+        num_speakers=info.num_speakers,
     )
 
 
@@ -131,6 +134,7 @@ class JobStore:
         profile: TranscriptionProfile = TranscriptionProfile.PRECISE,
         beam_size: int = 5,
         include_timestamps: bool = False,
+        num_speakers: int = 1,
     ) -> Job:
         job = Job(
             id=uuid.uuid4().hex,
@@ -140,6 +144,7 @@ class JobStore:
             profile=profile,
             beam_size=beam_size,
             include_timestamps=include_timestamps,
+            num_speakers=num_speakers,
         )
         async with self._lock:
             self._jobs[job.id] = job

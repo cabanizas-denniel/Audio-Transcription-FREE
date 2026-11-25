@@ -92,9 +92,10 @@ class TranscriptionWorker:
             "RESULT_PATH": str(result_path),
             "LANGUAGE":    job.language or "",
             "BEAM_SIZE":   str(job.beam_size),
+            "NUM_SPEAKERS": str(job.num_speakers),
             **{k: os.environ[k]
                for k in ("WHISPER_MODEL", "WHISPER_COMPUTE_TYPE", "WHISPER_DEVICE")
-               if k in os.environ},
+               if k in os.environ and os.environ[k]},
         }
 
         logger.info("Provisioning container fn-%s for job %s", job.id[:12], job.id)
@@ -119,6 +120,9 @@ def _run_inprocess(job: Job, result_path: Path) -> None:
     from app.services.transcriber import Transcriber
 
     result = Transcriber(get_settings()).transcribe(
-        job.audio_path, language=job.language, beam_size=job.beam_size
+        job.audio_path,
+        language=job.language,
+        beam_size=job.beam_size,
+        num_speakers=job.num_speakers,
     )
     result_path.write_text(result.model_dump_json(), encoding="utf-8")

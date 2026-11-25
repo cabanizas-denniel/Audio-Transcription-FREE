@@ -2,16 +2,16 @@
  * Recent files table — polls active jobs and re-renders from API.
  */
 
-import { deleteJob, getJob, listJobs } from "./api.js";
-import { renderEmptyState, renderJobRow } from "./components.js";
-import { $, $$, closeModal, formatDuration, openModal } from "./dom.js";
+import { deleteJob, getJob, listJobs } from "./api.js?v=2";
+import { renderEmptyState, renderJobRow } from "./components.js?v=2";
+import { $, $$, closeModal, formatDuration, openModal } from "./dom.js?v=2";
 import {
   baseName,
   downloadText,
   formatSrt,
   formatTranscriptDisplay,
   formatTxt,
-} from "./export.js";
+} from "./export.js?v=2";
 
 export class Dashboard {
   constructor({ tableBody, emptyMount, transcriptModal }) {
@@ -111,10 +111,14 @@ export class Dashboard {
 
     $("#transcript-title").textContent = current.filename;
     const tsLabel = current.include_timestamps ? "Timestamps on" : "Plain text";
+    const speakers = current.num_speakers
+      ? `${current.num_speakers} speaker${current.num_speakers === 1 ? "" : "s"}`
+      : null;
     $("#transcript-meta").textContent = [
       formatDuration(current.result?.duration),
       current.result?.language?.toUpperCase(),
       tsLabel,
+      speakers,
     ]
       .filter(Boolean)
       .join(" · ");

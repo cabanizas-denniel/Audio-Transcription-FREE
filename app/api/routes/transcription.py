@@ -104,12 +104,25 @@ def _resolve_profile(profile: Optional[str]) -> tuple[TranscriptionProfile, int]
     return chosen, PROFILE_BEAM_SIZES[chosen]
 
 
+def _resolve_num_speakers(num_speakers: Optional[int]) -> int:
+    """Clamp speaker count to the supported 1–10 range."""
+    if num_speakers is None:
+        return 1
+    if num_speakers < 1 or num_speakers > 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="num_speakers must be an integer between 1 and 10.",
+        )
+    return num_speakers
+
+
 async def _create_job_from_upload(
     *,
     file: UploadFile,
     language: Optional[str],
     profile: Optional[str],
     include_timestamps: bool,
+    num_speakers: Optional[int],
     settings: Settings,
     job_store: JobStore,
 ) -> tuple[Path, Job]:
@@ -122,6 +135,7 @@ async def _create_job_from_upload(
         max_bytes=settings.max_upload_mb * 1024 * 1024,
     )
     chosen_profile, beam_size = _resolve_profile(profile)
+    speakers = _resolve_num_speakers(num_speakers)
     job = await job_store.create(
         filename=file.filename or audio_path.name,
         audio_path=audio_path,
@@ -129,6 +143,7 @@ async def _create_job_from_upload(
         profile=chosen_profile,
         beam_size=beam_size,
         include_timestamps=include_timestamps,
+        num_speakers=speakers,
     )
     return audio_path, job
 
@@ -168,6 +183,10 @@ async def create_transcription(
         default=False,
         description="Include time ranges in transcript view and TXT export.",
     ),
+    num_speakers: int = Form(
+        default=1,
+        description="Expected number of speakers (1–10) for Person 1..N labels.",
+    ),
     settings: Settings = Depends(get_settings_dep),
     job_store: JobStore = Depends(get_job_store),
     worker: TranscriptionWorker = Depends(get_worker),
@@ -177,6 +196,7 @@ async def create_transcription(
         language=language,
         profile=profile,
         include_timestamps=include_timestamps,
+        num_speakers=num_speakers,
         settings=settings,
         job_store=job_store,
     )
@@ -204,6 +224,7 @@ async def create_transcription_sync(
     language: Optional[str] = Form(default=None),
     profile: Optional[str] = Form(default="precise"),
     include_timestamps: bool = Form(default=False),
+    num_speakers: int = Form(default=1),
     settings: Settings = Depends(get_settings_dep),
     job_store: JobStore = Depends(get_job_store),
     worker: TranscriptionWorker = Depends(get_worker),
@@ -213,6 +234,7 @@ async def create_transcription_sync(
         language=language,
         profile=profile,
         include_timestamps=include_timestamps,
+        num_speakers=num_speakers,
         settings=settings,
         job_store=job_store,
     )

@@ -40,7 +40,7 @@ class Settings(BaseSettings):
 
     # --- Whisper / faster-whisper -----------------------------------------
     # Model sizes: tiny, base, small, medium, large-v3
-    whisper_model: str = Field(default="tiny")
+    whisper_model: str = Field(default="small")
     whisper_device: Literal["cpu", "cuda", "auto"] = Field(default="cpu")
     # int8 is the lightest CPU option; use float16 on GPU.
     whisper_compute_type: str = Field(default="int8")

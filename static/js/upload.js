@@ -2,16 +2,16 @@
  * Upload modal controller — drag/drop, profile, progress.
  */
 
-import { uploadTranscription, pollUntilDone } from "./api.js";
+import { uploadTranscription, pollUntilDone } from "./api.js?v=2";
 import {
   ALLOWED_EXT,
   isAllowedUpload,
   LANGUAGES,
   PROFILES,
   PROGRESS,
-} from "./config.js";
-import { renderModeCards, renderProgressBar } from "./components.js";
-import { $, closeModal, openModal } from "./dom.js";
+} from "./config.js?v=2";
+import { renderModeCards, renderProgressBar } from "./components.js?v=2";
+import { $, closeModal, openModal } from "./dom.js?v=2";
 
 export class UploadModal {
   constructor({ backdrop, onComplete }) {
@@ -29,6 +29,7 @@ export class UploadModal {
     this.submitBtn = $("#btn-transcribe");
     this.fileNameEl = $("#selected-filename");
     this.timestampsCheckbox = $("#include-timestamps");
+    this.speakersSelect = $("#speakers-select");
 
     this._bind();
     this._renderModes();
@@ -115,6 +116,7 @@ export class UploadModal {
     this.progressWrap.replaceChildren();
     this.submitBtn.disabled = false;
     this.submitBtn.textContent = "Transcribe";
+    if (this.speakersSelect) this.speakersSelect.value = "1";
   }
 
   async _submit() {
@@ -140,6 +142,7 @@ export class UploadModal {
         language: this.languageSelect.value || undefined,
         profile: this.selectedProfile,
         includeTimestamps: this.timestampsCheckbox?.checked ?? false,
+        numSpeakers: Number(this.speakersSelect?.value || 1),
         onUploadProgress: (pct) => progress.setPercent(pct, "Uploading file…"),
       });
 

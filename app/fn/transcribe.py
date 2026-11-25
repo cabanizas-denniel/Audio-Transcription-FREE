@@ -13,11 +13,14 @@ def main() -> None:
     out   = Path(os.environ["RESULT_PATH"])
     lang  = os.environ.get("LANGUAGE") or None
     beam  = int(os.environ.get("BEAM_SIZE", "5"))
+    speakers = int(os.environ.get("NUM_SPEAKERS", "1"))
 
     from app.core.config import get_settings
     from app.services.transcriber import Transcriber
 
-    result = Transcriber(get_settings()).transcribe(audio, language=lang, beam_size=beam)
+    result = Transcriber(get_settings()).transcribe(
+        audio, language=lang, beam_size=beam, num_speakers=speakers
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(result.model_dump_json(), encoding="utf-8")
 

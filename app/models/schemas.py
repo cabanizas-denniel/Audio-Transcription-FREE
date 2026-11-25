@@ -24,6 +24,10 @@ class TranscriptSegment(BaseModel):
     start: float = Field(..., description="Segment start time in seconds.")
     end: float = Field(..., description="Segment end time in seconds.")
     text: str = Field(..., description="Transcribed text for this segment.")
+    speaker: Optional[str] = Field(
+        default=None,
+        description="Speaker label such as 'Person 1' when diarization is enabled.",
+    )
 
 
 class TranscriptionResult(BaseModel):
@@ -76,6 +80,12 @@ class JobInfo(BaseModel):
     include_timestamps: bool = Field(
         default=False,
         description="When true, UI and TXT export show segment time ranges.",
+    )
+    num_speakers: int = Field(
+        default=1,
+        ge=1,
+        le=10,
+        description="Expected speaker count used for Person 1..N labeling.",
     )
     result: Optional[TranscriptionResult] = None
 
